@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Linux CMake GDB",
+            "type": "cppdbg",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "args": [],
+            "stopAtEntry": false,
+            "program": "${command:cmake.launchTargetPath}",
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "cwd": "${workspaceFolder}/build"
+        }
+    ]
+}
