@@ -12,6 +12,18 @@
             "MIMode": "gdb",
             "miDebuggerPath": "/usr/bin/gdb",
             "cwd": "${workspaceFolder}/build"
+        },
+        {
+        "name": "MacOS CMake LLDB",
+        "type": "cppdbg",
+        "request": "launch",
+        "preLaunchTask": "build",
+        "args": [],
+        "stopAtEntry": false,
+        "program": "${command:cmake.launchTargetPath}",
+        "MIMode": "lldb",
+        "miDebuggerPath": "/usr/local/bin/lldb-mi",
+        "cwd": "${workspaceFolder}/build"
         }
     ]
 }
