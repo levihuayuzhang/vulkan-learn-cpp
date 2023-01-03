@@ -1,0 +1,3 @@
+/home/zhy/projects/graphic-api/vulkan/vulkan-learn-cpp/cmake-build-debug/CMakeFiles/vulkan-learn-cpp.dir
+/home/zhy/projects/graphic-api/vulkan/vulkan-learn-cpp/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/zhy/projects/graphic-api/vulkan/vulkan-learn-cpp/cmake-build-debug/CMakeFiles/rebuild_cache.dir

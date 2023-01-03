@@ -1,0 +1,6 @@
+# ninja log v5
+1	3	0	/home/zhy/projects/graphic-api/vulkan/vulkan-learn-cpp/cmake-build-debug/CMakeFiles/cmake.verify_globs	7d3413b607daebc7
+0	338	1672751876400698802	CMakeFiles/vulkan-learn-cpp.dir/src/first_app.cxx.o	302853796fa4cc10
+0	354	1672751876417365468	CMakeFiles/vulkan-learn-cpp.dir/src/mkk_window.cxx.o	2bedc34262451a77
+0	355	1672751876417365468	CMakeFiles/vulkan-learn-cpp.dir/src/main.cxx.o	5b9cd15653058822
+355	394	1672751876457365468	vulkan-learn-cpp	d0d2a55f0c2c83e6
