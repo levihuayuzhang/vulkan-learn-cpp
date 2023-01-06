@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Linux CMake GDB",
+            "name": "CMake GDB",
             "type": "cppdbg",
             "request": "launch",
             "preLaunchTask": "build",
@@ -14,7 +14,7 @@
             "cwd": "${workspaceFolder}/build"
         },
         {
-        "name": "MacOS CMake LLDB",
+        "name": "CMake LLDB",
         "type": "cppdbg",
         "request": "launch",
         "preLaunchTask": "build",
