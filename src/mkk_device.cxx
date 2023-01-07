@@ -1,13 +1,11 @@
 #include "mkk_device.hpp"
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_beta.h>
 
-// std headers
 #include <cstring>
 #include <iostream>
 #include <set>
 #include <unordered_set>
-#include <mkk_device.hpp>
+//#include <mkk_device.hpp>
 
 namespace mkk {
 
@@ -541,4 +539,4 @@ void MkkDevice::createImageWithInfo(
   }
 }
 
-}  // namespace lve
+}
