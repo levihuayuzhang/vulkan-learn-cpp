@@ -2,3 +2,4 @@ build
 xcuserdata
 cmake-build-debug
 *.xcuserstate
+*xcodeproj
