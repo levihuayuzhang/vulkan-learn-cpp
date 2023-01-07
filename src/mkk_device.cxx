@@ -1,4 +1,6 @@
 #include "mkk_device.hpp"
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_beta.h>
 
 // std headers
 #include <cstring>
@@ -85,8 +87,10 @@ void MkkDevice::createInstance() {
   VkInstanceCreateInfo createInfo = {};
   createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   createInfo.pApplicationInfo = &appInfo;
+  createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
   auto extensions = getRequiredExtensions();
+
   createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
   createInfo.ppEnabledExtensionNames = extensions.data();
 
@@ -160,6 +164,7 @@ void MkkDevice::createLogicalDevice() {
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
     createInfo.pEnabledFeatures = &deviceFeatures;
+
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
@@ -173,7 +178,7 @@ void MkkDevice::createLogicalDevice() {
     }
 
     if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device_) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create logical device!");
+        throw std::runtime_error("failed to create logical device!");
     }
 
     vkGetDeviceQueue(device_, indices.graphicsFamily, 0, &graphicsQueue_);
@@ -264,7 +269,13 @@ std::vector<const char *> MkkDevice::getRequiredExtensions() {
   const char **glfwExtensions;
   glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-  std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+// std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+    std::vector<const char *> extensions;
+    for (std::uint32_t i = 0; i < glfwExtensionCount; i++) {
+        extensions.emplace_back(glfwExtensions[i]);
+    }
+    extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME); // for MacOS MoltenVK (since 1.3.216 Vulkan SDK)
+    extensions.emplace_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME); // for MacOS MoltenVK (since 1.3.216 Vulkan SDK)
 
   if (enableValidationLayers) {
     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
