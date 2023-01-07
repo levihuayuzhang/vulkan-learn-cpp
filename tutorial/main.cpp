@@ -57,12 +57,12 @@ private:
         for (std::uint32_t i = 0; i < glfwExtensionCount; i++) {
             requiredExtensions.emplace_back(glfwExtensions[i]);
         }
-        requiredExtensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+        requiredExtensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME); // for newer macOS SDK
 
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
-        createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+        createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR; // for newer macOS SDK
         createInfo.enabledExtensionCount = (std::uint32_t) requiredExtensions.size();
         createInfo.ppEnabledExtensionNames = requiredExtensions.data();
         createInfo.enabledLayerCount =0;
@@ -70,9 +70,10 @@ private:
         VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
         if (result != VK_SUCCESS) {
             throw std::runtime_error("Failed to create instance...");
-        }else if (result == VK_SUCCESS) {
-            std::cout << "Instance create success at: "<< printf("%p", &instance) << std::endl;
         }
+//        else if (result == VK_SUCCESS) {
+//            std::cout << "Instance create success at: "<< printf("%p", &instance) << std::endl;
+//        }
     }
 
     void mainLoop() {
