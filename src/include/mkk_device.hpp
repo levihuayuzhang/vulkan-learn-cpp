@@ -104,6 +104,6 @@ public:
     VkQueue presentQueue_;
 
     const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-    const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME}; // `VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME` is for MacOS MoltenVK (since 1.3.216 Vulkan SDK)
+    const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 };
 }

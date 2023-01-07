@@ -85,10 +85,12 @@ void MkkDevice::createInstance() {
   VkInstanceCreateInfo createInfo = {};
   createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   createInfo.pApplicationInfo = &appInfo;
+
+#ifdef __APPLE__
   createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif
 
   auto extensions = getRequiredExtensions();
-
   createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
   createInfo.ppEnabledExtensionNames = extensions.data();
 
@@ -160,8 +162,12 @@ void MkkDevice::createLogicalDevice() {
 
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
-
     createInfo.pEnabledFeatures = &deviceFeatures;
+
+    // `VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME` is for MacOS MoltenVK (since 1.3.216 Vulkan SDK)
+#ifdef __APPLE__
+    deviceExtensions.emplace_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
+#endif
 
     createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
@@ -272,9 +278,10 @@ std::vector<const char *> MkkDevice::getRequiredExtensions() {
     for (std::uint32_t i = 0; i < glfwExtensionCount; i++) {
         extensions.emplace_back(glfwExtensions[i]);
     }
+#ifdef __APPLE__
     extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME); // for MacOS MoltenVK (since 1.3.216 Vulkan SDK)
     extensions.emplace_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME); // for MacOS MoltenVK (since 1.3.216 Vulkan SDK)
-
+#endif
   if (enableValidationLayers) {
     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
   }
