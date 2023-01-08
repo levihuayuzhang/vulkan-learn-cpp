@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <vector>
 #include <algorithm>
+#include <cstring>
 
 class HelloTriangleApplication {
 public:
@@ -74,15 +75,7 @@ private:
         // get available extension
         std::vector<VkExtensionProperties> availableExtensions = getAvailableExtensions ();
 
-//todo: check extensions required by glfw is available in vulkan supported extension list
-//        std::vector<const char*> availableExtensionNames;
-//        for (std::uint32_t i = 0; i < availableExtensions.size(); i++) {
-//            availableExtensionNames.emplace_back(availableExtensions[i].extensionName);
-//        }
-//        bool allAvailable = checkExtensions( availableExtensionNames, requiredExtensions);
-//        if (allAvailable) {
-//            std::cout << "\n All Required Extensions are all available" << "\n";
-//        }
+        checkExtensions( availableExtensions, requiredExtensions);
 
         // creating instance
         VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
@@ -122,24 +115,62 @@ private:
         return extensions;
     }
 
-//todo: check extensions required by glfw is available in vulkan supported extension list
-//    bool checkExtensions (std::vector<const char*> availableExtensions, std::vector<const char*> requiredExtensions) {
-////        std::sort(requiredExtensions.begin(), requiredExtensions.end());
-////        std::sort(availableExtensions.begin(), availableExtensions.end());
-////        return std::includes(availableExtensions.begin(), availableExtensions.end(),requiredExtensions.begin(), requiredExtensions.end());
-//
-//        bool allAvailable = false;
-//        for (std::uint32_t i = 0; i < requiredExtensions.size(); i++){
-//            allAvailable = allAvailable || false;
-//            for (std::uint32_t j = 0; j < availableExtensions.size(); j++){
-//                if (requiredExtensions[i] == availableExtensions[j]) {
-//                    allAvailable = true;
-//                    break;
-//                }
-//            }
-//        }
-//        return allAvailable;
-//    }
+    // check whether all required extension from glfw is available
+    bool checkExtensions (std::vector<VkExtensionProperties> availableExtensions, std::vector<const char*> requiredExtensions) {
+        // transform vector<VkExtensionProperties> to vector<const char*>
+        std::vector<const char*> availableExtensionNames;
+        for (std::uint32_t i = 0; i < availableExtensions.size(); i++) {
+            availableExtensionNames.emplace_back(availableExtensions[i].extensionName);
+        }
+
+//        requiredExtensions.emplace_back("assHOLE"); // debugging purpose
+
+        // print out required extensions
+        std::cout << "\nRequired extensions are: " << "\n";
+        for (const auto& requiredExtension : requiredExtensions) {
+
+            std::cout << '\t' << requiredExtension << "\n";
+        }
+
+        // compare
+        std::vector<const char*> notAvailableRequiredExtensions;
+        std::vector<const char*> availableRequiredExtensions;
+        bool allAvailable = true;
+        bool flag;
+        for (std::uint32_t i = 0; i < requiredExtensions.size(); i++){
+            flag = false;
+            for (std::uint32_t j = 0; j < availableExtensionNames.size(); j++){
+//                std::cout << requiredExtensions[i] << ":::" << availableExtensionNames[j] << "\n"; // debugging purpose
+                if (strcmp(requiredExtensions[i], availableExtensionNames[j]) == 0) {
+                    flag = true;
+                    allAvailable = allAvailable && flag;
+                    break;
+                }else {
+                    flag = false;
+                }
+            }
+            if (flag == false) {
+                allAvailable = allAvailable && flag;
+                notAvailableRequiredExtensions.emplace_back(requiredExtensions[i]);
+            } else {
+                availableRequiredExtensions.emplace_back(requiredExtensions[i]);
+            }
+        }
+
+        if (allAvailable) {
+            std::cout << "\nAll required extensions are available: " << "\n";
+            for (const auto& availableRequiredExtension : availableRequiredExtensions){
+                std::cout << '\t' << availableRequiredExtension << "\n";
+            }
+        }else {
+            std::cout << "\nThese required extensions are NOT available: " << "\n";
+            for (const auto& notAvailableRequiredExtension : notAvailableRequiredExtensions){
+                std::cout << '\t' << notAvailableRequiredExtension << "\n";
+            }
+        }
+
+        return allAvailable;
+    }
 };
 
 int main () {
