@@ -9,6 +9,9 @@
 #include <algorithm>
 #include <cstring>
 
+//// for release version
+//#define NDEBUG
+
 class HelloTriangleApplication {
 public:
     void run () {
@@ -22,9 +25,17 @@ private:
     const std::uint32_t WIDTH = 800;
     const std::uint32_t HEIGHT = 600;
     GLFWwindow* window;
-
     VkInstance instance;
 
+#ifdef NDEBUG
+    const bool enableValidationLayers = false;
+#else
+    const bool enableValidationLayers = true;
+#endif
+
+    std::vector<const char*> requestedLayers = {
+//            "ass" // debug purpose
+    };
 
     void initWindow(){
         glfwInit();
@@ -40,6 +51,20 @@ private:
     }
 
     void createInstance (){
+        if (enableValidationLayers) {
+            requestedLayers.emplace_back("VK_LAYER_KHRONOS_validation");
+        }
+
+        // check layer support for validation layer
+        if (requestedLayers.size() > 0) {
+            if (!checkLayerSupport()) {
+                throw std::runtime_error("Validation layers requested, but not available!");
+            }
+        } else {
+            std::cout << "\nNo any layers requested..." << "\n";
+        }
+
+        // application info
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         appInfo.pApplicationName = "Hello Triangle";
@@ -48,41 +73,42 @@ private:
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_0;
 
-        std::uint32_t glfwExtensionCount = 0;
-        const char** glfwExtensions;
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+        // get required extensions
+        std::vector<const char*> requiredExtensions = getRequiredExtensions();
 
-        /* Since 1.3.216 Vulkan SDK, need add `VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR` to flags
-         * and `VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME` to enabled extension name
-         */
-        std::vector<const char*> requiredExtensions; // use vector handle for extensions returned from glfw
-        for (std::uint32_t i = 0; i < glfwExtensionCount; i++) {
-            requiredExtensions.emplace_back(glfwExtensions[i]);
-        }
-#ifdef __APPLE__
-        requiredExtensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME); // for newer macOS SDK
-#endif
+        // check whether all required extension are available
+        checkExtensions(getAvailableExtensions(), requiredExtensions);
+
+        // instance info
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
+        // set flag for macOS
 #ifdef __APPLE__
         createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR; // for newer macOS SDK
 #endif
+        // extensions
         createInfo.enabledExtensionCount = (std::uint32_t) requiredExtensions.size();
         createInfo.ppEnabledExtensionNames = requiredExtensions.data();
-        createInfo.enabledLayerCount =0;
 
-        // get available extension
-        std::vector<VkExtensionProperties> availableExtensions = getAvailableExtensions ();
-
-        checkExtensions( availableExtensions, requiredExtensions);
+        // layers
+        createInfo.enabledLayerCount = static_cast<std::uint32_t>(requestedLayers.size());
+        createInfo.ppEnabledLayerNames = requestedLayers.data();
+//        if (createInfo.enabledLayerCount > 0) {
+//            std::cout << "\nEnabled layers:" << "\n";
+//            for (std::uint32_t i = 0; i < createInfo.enabledLayerCount; i++) {
+//                std::cout << "\t" << createInfo.ppEnabledLayerNames[i] << "\n";
+//            }
+//        } else {
+//            std::cout << "\nHasn't enable any layers..." << "\n";
+//        }
 
         // creating instance
         VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
         if (result != VK_SUCCESS) {
             throw std::runtime_error("Failed to create instance...");
         }else {
-            std::cout << "\nInstance Create Success!!!" << std::endl;
+            std::cout << "\nInstance Create Success..." << std::endl;
         }
     }
 
@@ -100,6 +126,33 @@ private:
         glfwTerminate();
     }
 
+    std::vector<const char*> getRequiredExtensions(){
+        std::vector<const char*> extensions;
+
+        // get glfw required extension
+        std::uint32_t glfwExtensionCount = 0;
+        const char** glfwExtensions;
+        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+        // set required extension
+        for (std::uint32_t i = 0; i < glfwExtensionCount; i++) {
+            extensions.emplace_back(glfwExtensions[i]);
+        }
+        /* Since 1.3.216 Vulkan SDK, need add `VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR` to flags
+         * and `VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME` to enabled extension name
+         */
+#ifdef __APPLE__
+        extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME); // for newer macOS SDK
+#endif
+        if (enableValidationLayers) {
+            extensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        }
+
+//        requiredExtensions.emplace_back("assHOLE"); // debugging purpose
+
+        return extensions;
+    }
+
     // get available extension
     std::vector<VkExtensionProperties> getAvailableExtensions (){
         std::uint32_t extensionCount = 0;
@@ -107,7 +160,7 @@ private:
         std::vector<VkExtensionProperties> extensions(extensionCount);
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
-        std::cout << "Available Extensions:\n";
+        std::cout << "\nAvailable Extensions:\n";
         for (const auto& extension : extensions) {
             std::cout << '\t' << extension.extensionName << "\n";
         }
@@ -122,8 +175,6 @@ private:
         for (std::uint32_t i = 0; i < availableExtensions.size(); i++) {
             availableExtensionNames.emplace_back(availableExtensions[i].extensionName);
         }
-
-//        requiredExtensions.emplace_back("assHOLE"); // debugging purpose
 
         // print out required extensions
         std::cout << "\nRequired extensions are: " << "\n";
@@ -167,9 +218,72 @@ private:
             for (const auto& notAvailableRequiredExtension : notAvailableRequiredExtensions){
                 std::cout << '\t' << notAvailableRequiredExtension << "\n";
             }
+            throw std::runtime_error("Some above required extensions are NOT available!\n");
         }
 
         return allAvailable;
+    }
+
+    bool checkLayerSupport() {
+        std::cout << "\nChecking layer support... " << "\n";
+
+        // print out requested layers
+        std::cout << "\nRequested layers are: " << "\n";
+        for (const auto& requestedLayer : requestedLayers) {
+
+            std::cout << '\t' << requestedLayer << "\n";
+        }
+
+        bool allFounded = true;
+        // checking available layers
+        std::cout << "\nChecking available layers... " << "\n";
+        std::uint32_t layerCount;
+        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+        std::vector<VkLayerProperties> availableLayers(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+        std::cout << "Available layers are:" << "\n";
+        for (auto& availableLayer : availableLayers) {
+            std::cout << "\t" << availableLayer.layerName << "\n";
+        }
+
+        std::vector<const char*> foundedLayerBuf;
+        std::vector<const char*> notFoundedLayerBuf;
+        for (const char* requestedLayer : requestedLayers) {
+            bool layerFound = false;
+
+            for (const auto& layerProperties : availableLayers){
+                if (strcmp(requestedLayer, layerProperties.layerName) == 0) {
+                    layerFound = true;
+                    foundedLayerBuf.emplace_back(requestedLayer);
+                    break;
+                }
+            }
+            if (!layerFound) {
+                notFoundedLayerBuf.emplace_back(requestedLayer);
+            }
+            allFounded = allFounded && layerFound;
+        }
+
+        if (allFounded) {
+            std::cout << "\nAll founded layers in available list:" << "\n";
+            for (auto& foundedLayer : foundedLayerBuf) {
+                std::cout << "\t" << foundedLayer << "\n";
+            }
+            return true;
+        } else {
+            if (foundedLayerBuf.size() > 0) {
+                std::cout << "\nSome founded layers in available list:" << "\n";
+                for (auto &foundedLayer: foundedLayerBuf) {
+                    std::cout << "\t" << foundedLayer << "\n";
+                }
+            }
+
+            std::cout << "\nSome layers NOT founded in available list:" << "\n";
+            for (auto& notFoundedLayer : notFoundedLayerBuf) {
+                std::cout << "\t" << notFoundedLayer << "\n";
+            }
+            return false;
+        }
     }
 };
 
