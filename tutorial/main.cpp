@@ -9,8 +9,28 @@
 #include <algorithm>
 #include <cstring>
 
-//// for release version
-//#define NDEBUG
+#ifdef NDEBUG
+const bool enableValidationLayers = false;
+#else
+const bool enableValidationLayers = true;
+#endif
+
+VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "ckCreateDebugUtilsMessengerEXT");
+    if (func != nullptr) {
+        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+    } else {
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    }
+}
+
+void DestroyDebugUtilsMessengerEXT (VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
+    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+    if (func != nullptr) {
+        func(instance, debugMessenger, pAllocator);
+    }
+}
+
 
 class HelloTriangleApplication {
 public:
@@ -26,13 +46,7 @@ private:
     const std::uint32_t HEIGHT = 600;
     GLFWwindow* window;
     VkInstance instance;
-
-#ifdef NDEBUG
-    const bool enableValidationLayers = false;
-#else
-    const bool enableValidationLayers = true;
-#endif
-
+    VkDebugUtilsMessengerEXT debugMessenger;
     std::vector<const char*> requestedLayers = {
 //            "ass" // debug purpose
     };
@@ -48,6 +62,24 @@ private:
 
     void initVulkan(){
         createInstance();
+        setupDebugMessenger();
+    }
+
+    void mainLoop() {
+        while (!glfwWindowShouldClose(window)) {
+            glfwPollEvents();
+        }
+    }
+
+    void cleanup() {
+        if(enableValidationLayers) {
+            DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+        }
+        vkDestroyInstance(instance, nullptr);
+
+        glfwDestroyWindow(window);
+
+        glfwTerminate();
     }
 
     void createInstance (){
@@ -91,9 +123,7 @@ private:
         createInfo.enabledExtensionCount = (std::uint32_t) requiredExtensions.size();
         createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
-        // layers
-        createInfo.enabledLayerCount = static_cast<std::uint32_t>(requestedLayers.size());
-        createInfo.ppEnabledLayerNames = requestedLayers.data();
+
 //        if (createInfo.enabledLayerCount > 0) {
 //            std::cout << "\nEnabled layers:" << "\n";
 //            for (std::uint32_t i = 0; i < createInfo.enabledLayerCount; i++) {
@@ -103,6 +133,20 @@ private:
 //            std::cout << "\nHasn't enable any layers..." << "\n";
 //        }
 
+        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+        if (enableValidationLayers) {
+            // layers
+            createInfo.enabledLayerCount = static_cast<std::uint32_t>(requestedLayers.size());
+            createInfo.ppEnabledLayerNames = requestedLayers.data();
+
+            populateDebugMessengerCreateInfo(debugCreateInfo);
+            createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
+        } else {
+            createInfo.enabledLayerCount = 0;
+            createInfo.pNext = nullptr;
+        }
+
+
         // creating instance
         VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
         if (result != VK_SUCCESS) {
@@ -110,20 +154,6 @@ private:
         }else {
             std::cout << "\nInstance Create Success..." << std::endl;
         }
-    }
-
-    void mainLoop() {
-        while (!glfwWindowShouldClose(window)) {
-            glfwPollEvents();
-        }
-    }
-
-    void cleanup() {
-        vkDestroyInstance(instance, nullptr);
-
-        glfwDestroyWindow(window);
-
-        glfwTerminate();
     }
 
     std::vector<const char*> getRequiredExtensions(){
@@ -285,7 +315,42 @@ private:
             return false;
         }
     }
+
+    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+
+        createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                                     VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                                 VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        createInfo.pfnUserCallback = debugCallback;
+        createInfo.pUserData = nullptr;
+    }
+
+    void setupDebugMessenger(){
+        if (!enableValidationLayers) return;
+
+        VkDebugUtilsMessengerCreateInfoEXT createInfo;
+        populateDebugMessengerCreateInfo(createInfo);
+
+        if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to set up debug messenger!");
+        }
+
+    }
+
+    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+            VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+            VkDebugUtilsMessageTypeFlagsEXT messageTye,
+            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+            void* pUserData){
+        std::cerr << "Validation layer: " << pCallbackData -> pMessage << std::endl;
+
+        return VK_FALSE;
+    }
 };
+
 
 int main () {
     HelloTriangleApplication app;
