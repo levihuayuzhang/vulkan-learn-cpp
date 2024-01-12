@@ -1,4 +1,5 @@
 build
+.cache
 xcuserdata
 cmake-build-debug
 *.xcuserstate
