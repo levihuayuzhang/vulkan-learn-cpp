@@ -1,8 +1,33 @@
 cmake_minimum_required(VERSION 3.28)
-project(vulkan-learn-cpp)
+
+if (PROJECT_BINARY_DIR STREQUAL PROJECT_SOURCE_DIR)
+    message(STATUS "WARN: PROJECT_BINARY_DIR == PROJECT_SOURCE_DIR")
+endif()
+
+set(CMAKE_CXX_EXTENSIONS OFF)
+if (NOT CMAKE_BUILD_TYPE)
+    message(STATUS "default set CMAKE_BUILD_TYPE to Release")
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message(STATUS "DEBUG MODE")
+endif()
+
+if (NOT MSVC)
+    find_program(CCACHE_PROGRAM ccache)
+    if (CCACHE_PROGRAM)
+        message(STATUS "Found CCache: ${CCACHE_PROGRAM}")
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_PROGRAM})
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ${CCACHE_PROGRAM})
+    endif()
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # set(CMAKE_BUILD_PARALLEL_LEVEL 10)
+
+project(vulkan-learn-cpp)
 
 find_package(glfw3 3.3 REQUIRED)
 find_package(GLEW REQUIRED)
@@ -28,8 +53,8 @@ message(STATUS "Vulkan_glslc_FOUND is ${Vulkan_glslc_FOUND}")
 message(STATUS "Vulkan_glslang_FOUND is ${Vulkan_glslang_FOUND}")
 message(STATUS "Vulkan_SPIRV-Tools_FOUND is ${Vulkan_SPIRV-Tools_FOUND}")
 
+include_directories(${Vulkan_INCLUDE_DIR})
 # vulkan engine cpp
 add_subdirectory(src)
-
 # vulkan tutorial
 add_subdirectory(tutorial)

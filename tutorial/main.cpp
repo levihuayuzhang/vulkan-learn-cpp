@@ -2,11 +2,11 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <stdexcept>
-#include <cstdlib>
 #include <vector>
-#include <cstring>
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
