@@ -16,6 +16,6 @@ class FirstApp {
 
         MkkDevice mkkDevice {mkkWindow};
 
-        MkkPipeline mkkPipeline {mkkDevice, "../build/simple_shader.vert.spv", "../build/simple_shader.frag.spv", MkkPipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)};
+        MkkPipeline mkkPipeline {mkkDevice, "../simple_shader.vert.spv", "../simple_shader.frag.spv", MkkPipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)};
 };
 }

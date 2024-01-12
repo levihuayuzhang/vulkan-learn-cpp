@@ -1,10 +1,9 @@
 
-#include <first_app.hpp>
 #include <cstdlib>
+#include <first_app.hpp>
 #include <iostream>
-#include <stdexcept>
 
-int main() {
+auto main() -> int {
     mkk::FirstApp app{};
 
     try{
@@ -13,6 +12,6 @@ int main() {
         std::cerr << e.what() << "\n";
         return EXIT_FAILURE;
     }
-
+    
     return EXIT_SUCCESS;
 }
