@@ -11,16 +11,21 @@ find_package(glm REQUIRED)
 # https://github.com/KhronosGroup/MoltenVK/issues/116#issuecomment-377356564
 # https://cmake.org/cmake/help/latest/module/FindVulkan.html
 # https://vulkan.lunarg.com/doc/view/1.3.268.1/mac/getting_started.html
-find_package(Vulkan REQUIRED)
+find_package(Vulkan
+            REQUIRED
+            OPTIONAL_COMPONENTS MoltenVK glslc glslangValidator glslang shaderc_combined SPIRV-Tools dxc)
+message(STATUS "CMAKE_SYSTEM_NAME is ${CMAKE_SYSTEM_NAME}")
+message(STATUS "APPLE is ${APPLE}")
 message(STATUS "VULKAN_SDK is $ENV{VULKAN_SDK}")
 message(STATUS "VK_ICD_FILENAMES is $ENV{VK_ICD_FILENAMES}")
 message(STATUS "Vulkan_FOUND is ${Vulkan_FOUND}")
 message(STATUS "Vulkan_INCLUDE_DIR is ${Vulkan_INCLUDE_DIR}")
 message(STATUS "Vulkan_LIBRARY is ${Vulkan_LIBRARY}")
-# message(STATUS "Vulkan_LIBRARIES is ${Vulkan_LIBRARIES}")
 message(STATUS "Vulkan_VERSION is ${Vulkan_VERSION}")
-message(STATUS "Vulkan_glslc_FOUND is ${Vulkan_glslc_FOUND}")
 message(STATUS "Vulkan_MoltenVK_FOUND is ${Vulkan_MoltenVK_FOUND}")
+message(STATUS "Vulkan_MoltenVK_LIBRARY is ${Vulkan_MoltenVK_LIBRARY}")
+message(STATUS "Vulkan_glslc_FOUND is ${Vulkan_glslc_FOUND}")
+message(STATUS "Vulkan_glslang_FOUND is ${Vulkan_glslang_FOUND}")
 message(STATUS "Vulkan_SPIRV-Tools_FOUND is ${Vulkan_SPIRV-Tools_FOUND}")
 
 # vulkan engine cpp

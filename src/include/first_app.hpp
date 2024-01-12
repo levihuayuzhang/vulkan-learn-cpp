@@ -18,4 +18,4 @@ class FirstApp {
 
         MkkPipeline mkkPipeline {mkkDevice, "../simple_shader.vert.spv", "../simple_shader.frag.spv", MkkPipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)};
 };
-}
+}  // namespace mkk
